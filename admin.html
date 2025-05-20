@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #a29bfe;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #1e293b;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        input, textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #6c5ce7;
+            color: white;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #a29bfe;
+        }
+
+        .game-list {
+            max-width: 800px;
+            margin: 30px auto;
+        }
+
+        .game-item {
+            background-color: #2d3748;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-title {
+            font-weight: bold;
+        }
+
+        .delete-btn {
+            background-color: crimson;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: #a29bfe;
+            text-decoration: none;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Quản lý Game</h1>
+
+    <form id="gameForm">
+        <input type="text" id="title" placeholder="Tên game" required>
+        <input type="number" id="price" placeholder="Giá (VND)" required>
+        <input type="text" id="image" placeholder="Link ảnh" required>
+        <input type="text" id="categories" placeholder="Thể loại (cách nhau bởi dấu phẩy, ví dụ: action,rpg)" required>
+        <button type="submit">Thêm game</button>
+    </form>
+
+    <div class="game-list" id="gameList">
+        <!-- Danh sách game sẽ hiển thị ở đây -->
+    </div>
+
+    <div class="back-link">
+        <a href="index.html">← Quay lại trang chính</a>
+    </div>
+
+    <script>
+        let games = [];
+
+        function loadGamesFromStorage() {
+            const saved = localStorage.getItem('games');
+            games = saved ? JSON.parse(saved) : [];
+        }
+
+        function saveGamesToStorage() {
+            localStorage.setItem('games', JSON.stringify(games));
+        }
+
+        function renderGames() {
+            const gameList = document.getElementById('gameList');
+            gameList.innerHTML = '';
+
+            if (games.length === 0) {
+                gameList.innerHTML = '<p style="text-align:center;">Chưa có game nào.</p>';
+                return;
+            }
+
+            games.forEach((game, index) => {
+                const item = document.createElement('div');
+                item.className = 'game-item';
+                item.innerHTML = `
+                    <span class="game-title">${game.title}</span>
+                    <button class="delete-btn" onclick="deleteGame(${index})">Xóa</button>
+                `;
+                gameList.appendChild(item);
+            });
+        }
+
+        function deleteGame(index) {
+            if (confirm('Bạn có chắc muốn xóa game này không?')) {
+                games.splice(index, 1);
+                saveGamesToStorage();
+                renderGames();
+            }
+        }
+
+        document.getElementById('gameForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const title = document.getElementById('title').value.trim();
+            const price = parseInt(document.getElementById('price').value.trim());
+            const image = document.getElementById('image').value.trim();
+            const categories = document.getElementById('categories').value.trim().split(',').map(c => c.trim().toLowerCase());
+
+            if (!title || isNaN(price) || !image || categories.length === 0) {
+                alert('Vui lòng điền đầy đủ thông tin!');
+                return;
+            }
+
+            const newGame = {
+                id: Date.now(),
+                title,
+                price,
+                image,
+                categories
+            };
+
+            games.push(newGame);
+            saveGamesToStorage();
+            renderGames();
+
+            this.reset(); // Clear form
+        });
+
+        // Initial load
+        loadGamesFromStorage();
+        renderGames();
+    </script>
+
+</body>
+</html>
